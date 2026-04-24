@@ -6,29 +6,24 @@ import com.codeanalyzer.util.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-/**
- * Low-level wrapper for the Gemini 1.5 Flash REST API.
- * Sends a prompt and returns the generated text.
- */
 public class GeminiService {
 
     private static final AppConfig CFG = AppConfig.getInstance();
+    private static final int MAX_RETRIES = 2;
 
-    /**
-     * Sends a text prompt to Gemini and returns the model's reply.
-     */
     public String generate(String prompt) throws Exception {
         String apiKey   = CFG.geminiApiKey();
         String model    = CFG.geminiModel();
         String baseUrl  = CFG.geminiApiUrl();
 
         if (apiKey == null || apiKey.isBlank() || apiKey.equals("YOUR_GEMINI_API_KEY_HERE")) {
-            throw new IllegalStateException("Gemini API key is not configured in config.properties");
+            throw new IllegalStateException(
+                "Gemini API key chua duoc cau hinh. "
+              + "Dat bien moi truong GEMINI_API_KEY hoac sua trong config.properties");
         }
 
         String url = baseUrl + model + ":generateContent?key=" + apiKey;
 
-        // Build request JSON
         JsonObject part = new JsonObject();
         part.addProperty("text", prompt);
 
@@ -44,17 +39,41 @@ public class GeminiService {
         JsonObject requestBody = new JsonObject();
         requestBody.add("contents", contents);
 
-        // Temperature / safety config
         JsonObject genConfig = new JsonObject();
         genConfig.addProperty("temperature", 0.3);
-        genConfig.addProperty("maxOutputTokens", 1024);
+        genConfig.addProperty("maxOutputTokens", 2048);
         requestBody.add("generationConfig", genConfig);
 
-        String responseJson = HttpUtil.post(url, requestBody.toString());
+        Exception lastError = null;
+        for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                String responseJson = HttpUtil.post(url, requestBody.toString());
+                return extractText(responseJson);
+            } catch (Exception e) {
+                lastError = e;
+                String msg = e.getMessage() != null ? e.getMessage() : "";
+                if (msg.contains("429") || msg.contains("503") || msg.contains("500")) {
+                    long waitMs = (long) Math.pow(2, attempt) * 2000L;
+                    System.out.println("[Gemini] Rate limit / server error, retry sau " + waitMs + "ms...");
+                    Thread.sleep(waitMs);
+                } else {
+                    throw e;
+                }
+            }
+        }
+        throw lastError;
+    }
 
-        // Parse: candidates[0].content.parts[0].text
+    private String extractText(String responseJson) {
         try {
             JsonObject resp = JsonUtil.parseObject(responseJson);
+
+            if (resp.has("error")) {
+                JsonObject err = resp.getAsJsonObject("error");
+                String message = err.has("message") ? err.get("message").getAsString() : responseJson;
+                throw new RuntimeException("Gemini API error: " + message);
+            }
+
             JsonArray candidates = resp.getAsJsonArray("candidates");
             if (candidates == null || candidates.isEmpty()) {
                 throw new RuntimeException("No candidates in Gemini response: " + responseJson);
@@ -63,6 +82,8 @@ public class GeminiService {
             JsonObject respContent = candidate.getAsJsonObject("content");
             JsonArray respParts   = respContent.getAsJsonArray("parts");
             return respParts.get(0).getAsJsonObject().get("text").getAsString().trim();
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse Gemini response: " + responseJson, e);
         }

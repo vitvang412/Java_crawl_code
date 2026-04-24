@@ -8,14 +8,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-/**
- * Nút bấm có bo tròn + hover effect. Dùng chung cho toàn UI.
- *
- * <pre>
- *   new StyledButton("▶ Bắt đầu", StyledButton.Variant.PRIMARY);
- *   new StyledButton("Xoá",        StyledButton.Variant.DANGER);
- * </pre>
- */
 public class StyledButton extends JButton {
 
     public enum Variant {
@@ -23,7 +15,7 @@ public class StyledButton extends JButton {
         ACCENT (UIConstants.ACCENT,   UIConstants.ACCENT_DARK,   Color.WHITE),
         SUCCESS(UIConstants.SUCCESS,  UIConstants.SUCCESS.darker(), Color.WHITE),
         DANGER (UIConstants.DANGER,   UIConstants.DANGER.darker(),  Color.WHITE),
-        NEUTRAL(new Color(0xECEFF1),  new Color(0xCFD8DC),       UIConstants.TEXT);
+        NEUTRAL(new Color(0xF0E6DD),  new Color(0xE0D0C4),       UIConstants.TEXT);
 
         final Color base, hover, fg;
         Variant(Color base, Color hover, Color fg) {
@@ -40,7 +32,7 @@ public class StyledButton extends JButton {
         setFont(UIConstants.MAIN.deriveFont(Font.BOLD));
         setForeground(variant.fg);
         setFocusPainted(false);
-        setBorder(new EmptyBorder(8, 16, 8, 16));
+        setBorder(new EmptyBorder(7, 14, 7, 14));
         setContentAreaFilled(false);
         setOpaque(false);
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -61,7 +53,7 @@ public class StyledButton extends JButton {
                 : new Color(0xBDBDBD);
 
         g2.setColor(bg);
-        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
         g2.dispose();
 
         super.paintComponent(g);

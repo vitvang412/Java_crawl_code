@@ -5,8 +5,11 @@ import com.codeanalyzer.database.StudentDAO;
 import com.codeanalyzer.database.SubmissionDAO;
 import com.codeanalyzer.model.Student;
 import com.codeanalyzer.model.Submission;
+import com.codeanalyzer.ui.UIConstants;
+import com.codeanalyzer.ui.components.StyledButton;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
 
@@ -22,39 +25,48 @@ public class AnalysisPanel extends JPanel {
     private JComboBox<StudentItem> cboStudent;
 
     public AnalysisPanel() {
-        setLayout(new BorderLayout(8, 8));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setLayout(new BorderLayout(10, 10));
+        setBorder(new EmptyBorder(UIConstants.BIG_PADDING, UIConstants.BIG_PADDING,
+                                   UIConstants.BIG_PADDING, UIConstants.BIG_PADDING));
+        setBackground(UIConstants.BACKGROUND);
 
         add(buildTopPanel(),  BorderLayout.NORTH);
         add(buildLogPanel(),  BorderLayout.CENTER);
     }
 
-    // ── Top controls ──────────────────────────────────────────────────────────
     private JPanel buildTopPanel() {
-        JPanel top = new JPanel(new BorderLayout(6, 6));
+        JPanel top = new JPanel(new BorderLayout(6, 8));
+        top.setOpaque(false);
 
-        // Config row
         JPanel configRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        configRow.setOpaque(false);
 
         cboStudent = new JComboBox<>();
         cboStudent.setPreferredSize(new Dimension(180, 28));
+        cboStudent.setFont(UIConstants.MAIN);
         loadStudentCombo();
-        configRow.add(new JLabel("Sinh viên:"));
+
+        JLabel lblSv = new JLabel("Sinh vien:");
+        lblSv.setFont(UIConstants.SUBHEADER);
+        lblSv.setForeground(UIConstants.TEXT);
+        configRow.add(lblSv);
         configRow.add(cboStudent);
 
         spinLimit = new JSpinner(new SpinnerNumberModel(10, 1, 200, 5));
-        configRow.add(new JLabel("  Số bài mỗi đợt:"));
+        spinLimit.setFont(UIConstants.MAIN);
+        JLabel lblLimit = new JLabel("  So bai moi dot:");
+        lblLimit.setFont(UIConstants.SUBHEADER);
+        lblLimit.setForeground(UIConstants.TEXT);
+        configRow.add(lblLimit);
         configRow.add(spinLimit);
 
         top.add(configRow, BorderLayout.NORTH);
 
-        // Button row
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        JButton btnStart  = new JButton("▶ Bắt đầu phân tích (Gemini AI)");
-        JButton btnClear  = new JButton("🗑 Xóa log");
-        btnStart.setBackground(new Color(34, 139, 34));
-        btnStart.setForeground(Color.WHITE);
-        btnStart.setFont(btnStart.getFont().deriveFont(Font.BOLD));
+        btnRow.setOpaque(false);
+
+        StyledButton btnStart = new StyledButton("Bat dau phan tich (Gemini AI)", StyledButton.Variant.SUCCESS);
+        StyledButton btnClear = new StyledButton("Xoa log", StyledButton.Variant.NEUTRAL);
 
         btnStart.addActionListener(e -> startAnalysis(btnStart));
         btnClear.addActionListener(e -> logArea.setText(""));
@@ -64,7 +76,9 @@ public class AnalysisPanel extends JPanel {
 
         progressBar = new JProgressBar();
         progressBar.setStringPainted(true);
-        progressBar.setString("Chờ...");
+        progressBar.setString("Cho...");
+        progressBar.setFont(UIConstants.SMALL);
+        progressBar.setPreferredSize(new Dimension(250, 24));
         btnRow.add(progressBar);
 
         top.add(btnRow, BorderLayout.CENTER);
@@ -74,21 +88,30 @@ public class AnalysisPanel extends JPanel {
     private JPanel buildLogPanel() {
         logArea = new JTextArea();
         logArea.setEditable(false);
-        logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        logArea.setBackground(new Color(20, 20, 30));
-        logArea.setForeground(new Color(200, 230, 200));
-        logArea.setCaretColor(Color.WHITE);
+        logArea.setFont(UIConstants.MONO);
+        logArea.setBackground(UIConstants.CONSOLE_BG);
+        logArea.setForeground(UIConstants.CONSOLE_FG);
+        logArea.setCaretColor(UIConstants.CONSOLE_FG);
 
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Log phân tích Gemini AI"));
+        panel.setBackground(UIConstants.CARD_BG);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(UIConstants.BORDER),
+            new EmptyBorder(8, 8, 8, 8)));
+
+        JLabel lbl = new JLabel("Log phan tich Gemini AI");
+        lbl.setFont(UIConstants.SUBHEADER);
+        lbl.setForeground(UIConstants.PRIMARY_DARK);
+        lbl.setBorder(new EmptyBorder(0, 0, 6, 0));
+
+        panel.add(lbl, BorderLayout.NORTH);
         panel.add(new JScrollPane(logArea), BorderLayout.CENTER);
         return panel;
     }
 
-    // ── Logic ─────────────────────────────────────────────────────────────────
     private void loadStudentCombo() {
         cboStudent.removeAllItems();
-        cboStudent.addItem(new StudentItem(0, "-- Tất cả --"));
+        cboStudent.addItem(new StudentItem(0, "-- Tat ca --"));
         for (Student s : studentDAO.findAll()) {
             cboStudent.addItem(new StudentItem(s.getId(), s.getUsername()));
         }
@@ -103,24 +126,23 @@ public class AnalysisPanel extends JPanel {
 
             StudentItem sel = (StudentItem) cboStudent.getSelectedItem();
             if (sel != null && sel.id != 0) {
-                // Filter by student: get unanalyzed for that student only
                 unanalyzed = submissionDAO.findUnanalyzedByStudent(sel.id, limit);
             } else {
                 unanalyzed = submissionDAO.findUnanalyzed(limit);
             }
 
             if (unanalyzed.isEmpty()) {
-                appendLog("✅ Không có bài nào cần phân tích thêm.");
+                appendLog("Khong co bai nao can phan tich them.");
                 SwingUtilities.invokeLater(() -> {
                     btnStart.setEnabled(true);
                     progressBar.setValue(0);
-                    progressBar.setString("Không còn bài cần phân tích.");
+                    progressBar.setString("Khong con bai can phan tich.");
                 });
                 return;
             }
 
-            appendLog("══════════════════════════════════════════");
-            appendLog("Bắt đầu phân tích " + unanalyzed.size() + " bài nộp bằng Gemini AI...");
+            appendLog("======================================");
+            appendLog("Bat dau phan tich " + unanalyzed.size() + " bai nop bang Gemini AI...");
 
             int total = unanalyzed.size();
             for (int i = 0; i < total; i++) {
@@ -129,29 +151,28 @@ public class AnalysisPanel extends JPanel {
                 SwingUtilities.invokeLater(() -> {
                     int pct = (int) (100.0 * finalI / total);
                     progressBar.setValue(pct);
-                    progressBar.setString(String.format("%d/%d bài (%d%%)", finalI + 1, total, pct));
+                    progressBar.setString(String.format("%d/%d bai (%d%%)", finalI + 1, total, pct));
                 });
 
-                appendLog(String.format("\n[%d/%d] Phân tích: \"%s\" của %s",
+                appendLog(String.format("\n[%d/%d] Phan tich: \"%s\" cua %s",
                         i + 1, total, s.getProblemName(), s.getStudentUsername()));
 
                 try {
                     analyzer.analyzeSubmission(s);
-                    appendLog("  → ✅ Hoàn tất.");
+                    appendLog("  -> Hoan tat.");
                 } catch (Exception ex) {
-                    appendLog("  → ❌ Lỗi: " + ex.getMessage());
+                    appendLog("  -> Loi: " + ex.getMessage());
                 }
 
-                // Small delay to avoid rate-limiting
                 try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
             }
 
-            appendLog("\n══════════════════════════════════════════");
-            appendLog("🎉 Phân tích xong " + total + " bài!");
+            appendLog("\n======================================");
+            appendLog("Phan tich xong " + total + " bai!");
             SwingUtilities.invokeLater(() -> {
                 btnStart.setEnabled(true);
                 progressBar.setValue(100);
-                progressBar.setString("Hoàn thành!");
+                progressBar.setString("Hoan thanh!");
             });
         }, "analysis-thread").start();
     }

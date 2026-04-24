@@ -4,9 +4,13 @@ import com.codeanalyzer.crawler.CodeforceCrawler;
 import com.codeanalyzer.database.StudentDAO;
 import com.codeanalyzer.model.PlatformType;
 import com.codeanalyzer.model.Student;
+import com.codeanalyzer.ui.UIConstants;
+import com.codeanalyzer.ui.components.StyledButton;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.List;
 
@@ -19,7 +23,9 @@ public class StudentManagementPanel extends JPanel {
 
     public StudentManagementPanel() {
         setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setBorder(new EmptyBorder(UIConstants.BIG_PADDING, UIConstants.BIG_PADDING,
+                                   UIConstants.BIG_PADDING, UIConstants.BIG_PADDING));
+        setBackground(UIConstants.BACKGROUND);
 
         add(buildToolbar(), BorderLayout.NORTH);
         add(buildCenter(),  BorderLayout.CENTER);
@@ -28,19 +34,17 @@ public class StudentManagementPanel extends JPanel {
         refreshData();
     }
 
-    // ── UI builders ───────────────────────────────────────────────────────────
-
     private JPanel buildToolbar() {
-        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        toolbar.setOpaque(false);
 
-        JButton btnAdd     = new JButton("➕ Thêm sinh viên");
-        JButton btnRefresh = new JButton("🔄 Làm mới");
-        JButton btnCrawl   = new JButton("🤖 Bắt đầu cào (Semi-Auto)");
-        JButton btnDelete  = new JButton("🗑️ Xóa");
+        StyledButton btnAdd     = new StyledButton("Them sinh vien", StyledButton.Variant.PRIMARY);
+        StyledButton btnRefresh = new StyledButton("Lam moi",        StyledButton.Variant.NEUTRAL);
+        StyledButton btnCrawl   = new StyledButton("Bat dau cao (Semi-Auto)", StyledButton.Variant.ACCENT);
+        StyledButton btnDelete  = new StyledButton("Xoa",            StyledButton.Variant.DANGER);
 
         toolbar.add(btnAdd);
         toolbar.add(btnRefresh);
-        toolbar.add(new JSeparator(JSeparator.VERTICAL));
         toolbar.add(btnCrawl);
         toolbar.add(btnDelete);
 
@@ -52,59 +56,85 @@ public class StudentManagementPanel extends JPanel {
         return toolbar;
     }
 
-    private JScrollPane buildCenter() {
-        String[] columns = {"ID", "Username", "Platform", "Thêm lúc", "Cào lần cuối", "Đang hoạt động"};
+    private JPanel buildCenter() {
+        String[] columns = {"ID", "Username", "Platform", "Them luc", "Cao lan cuoi", "Hoat dong"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         table = new JTable(tableModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setRowHeight(24);
-        return new JScrollPane(table);
+        table.setRowHeight(28);
+        table.setFont(UIConstants.MAIN);
+        table.setGridColor(UIConstants.BORDER);
+        table.setSelectionBackground(UIConstants.PRIMARY_LIGHT);
+        table.setSelectionForeground(UIConstants.TEXT);
+        table.getTableHeader().setFont(UIConstants.SUBHEADER);
+        table.getTableHeader().setBackground(UIConstants.PRIMARY);
+        table.getTableHeader().setForeground(Color.WHITE);
+
+        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+        center.setHorizontalAlignment(SwingConstants.CENTER);
+        table.getColumnModel().getColumn(0).setCellRenderer(center);
+        table.getColumnModel().getColumn(5).setCellRenderer(center);
+
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(UIConstants.CARD_BG);
+        card.setBorder(BorderFactory.createLineBorder(UIConstants.BORDER));
+        card.add(new JScrollPane(table), BorderLayout.CENTER);
+        return card;
     }
 
     private JPanel buildLogPanel() {
-        logArea = new JTextArea(6, 0);
+        logArea = new JTextArea(5, 0);
         logArea.setEditable(false);
-        logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        logArea.setBackground(new Color(30, 30, 30));
-        logArea.setForeground(new Color(200, 255, 200));
+        logArea.setFont(UIConstants.MONO);
+        logArea.setBackground(UIConstants.CONSOLE_BG);
+        logArea.setForeground(UIConstants.CONSOLE_FG);
+        logArea.setCaretColor(UIConstants.CONSOLE_FG);
 
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Log cào dữ liệu"));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(UIConstants.BORDER),
+            new EmptyBorder(8, 8, 8, 8)));
+        panel.setBackground(UIConstants.CARD_BG);
+
+        JLabel lbl = new JLabel("Log cao du lieu");
+        lbl.setFont(UIConstants.SUBHEADER);
+        lbl.setForeground(UIConstants.PRIMARY_DARK);
+        lbl.setBorder(new EmptyBorder(0, 0, 6, 0));
+
+        panel.add(lbl, BorderLayout.NORTH);
         panel.add(new JScrollPane(logArea), BorderLayout.CENTER);
         return panel;
     }
 
-    // ── Actions ───────────────────────────────────────────────────────────────
-
     private void addStudent() {
         String username = JOptionPane.showInputDialog(this,
-                "Nhập username Codeforces:", "Thêm sinh viên", JOptionPane.PLAIN_MESSAGE);
+                "Nhap username Codeforces:", "Them sinh vien", JOptionPane.PLAIN_MESSAGE);
         if (username == null || username.isBlank()) return;
 
         Student s = new Student(username.trim(), PlatformType.CODEFORCES);
         int id = studentDAO.save(s);
         if (id > 0) {
-            appendLog("✅ Đã thêm sinh viên: " + username);
+            appendLog("Da them sinh vien: " + username);
             refreshData();
         } else {
-            appendLog("⚠️ Username đã tồn tại hoặc có lỗi khi lưu.");
+            appendLog("Username da ton tai hoac co loi khi luu.");
         }
     }
 
     private void deleteSelected() {
         int row = table.getSelectedRow();
-        if (row == -1) { JOptionPane.showMessageDialog(this, "Chọn 1 sinh viên trước!"); return; }
+        if (row == -1) { JOptionPane.showMessageDialog(this, "Chon 1 sinh vien truoc!"); return; }
 
         int id = (int) tableModel.getValueAt(row, 0);
         String name = (String) tableModel.getValueAt(row, 1);
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Xóa sinh viên \"" + name + "\" khỏi danh sách?",
-                "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+                "Xoa sinh vien \"" + name + "\" khoi danh sach?",
+                "Xac nhan xoa", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             studentDAO.deactivate(id);
-            appendLog("🗑️ Đã ẩn sinh viên: " + name);
+            appendLog("Da an sinh vien: " + name);
             refreshData();
         }
     }
@@ -112,17 +142,16 @@ public class StudentManagementPanel extends JPanel {
     private void crawlSelected() {
         int row = table.getSelectedRow();
         if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 sinh viên!");
+            JOptionPane.showMessageDialog(this, "Vui long chon 1 sinh vien!");
             return;
         }
         int id = (int) tableModel.getValueAt(row, 0);
         Student s = studentDAO.findById(id);
-        if (s == null) { appendLog("Không tìm thấy sinh viên!"); return; }
+        if (s == null) { appendLog("Khong tim thay sinh vien!"); return; }
 
-        appendLog("══════════════════════════════════════");
-        appendLog("Bắt đầu cào cho: " + s.getUsername());
+        appendLog("======================================");
+        appendLog("Bat dau cao cho: " + s.getUsername());
 
-        // Run in background thread to keep UI responsive
         new Thread(() -> {
             CodeforceCrawler crawler = new CodeforceCrawler();
             crawler.crawlForStudent(s, msg -> SwingUtilities.invokeLater(() -> appendLog(msg)));
@@ -137,16 +166,18 @@ public class StudentManagementPanel extends JPanel {
             tableModel.addRow(new Object[]{
                 s.getId(),
                 s.getUsername(),
-                s.getPlatform(),
-                s.getAddedAt()  != null ? s.getAddedAt().toLocalDate()       : "-",
-                s.getLastCrawledAt() != null ? s.getLastCrawledAt().toString() : "Chưa cào",
-                s.isActive() ? "✅" : "❌"
+                s.getPlatform() != null ? s.getPlatform().getDisplayName() : "?",
+                s.getAddedAt() != null ? s.getAddedAt().toString() : "-",
+                s.getLastCrawledAt() != null ? s.getLastCrawledAt().toString() : "-",
+                s.isActive() ? "Co" : "Khong"
             });
         }
     }
 
     private void appendLog(String msg) {
-        logArea.append(msg + "\n");
-        logArea.setCaretPosition(logArea.getDocument().getLength()); // auto-scroll
+        SwingUtilities.invokeLater(() -> {
+            logArea.append(msg + "\n");
+            logArea.setCaretPosition(logArea.getDocument().getLength());
+        });
     }
 }

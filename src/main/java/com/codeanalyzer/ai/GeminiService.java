@@ -52,7 +52,7 @@ public class GeminiService {
             } catch (Exception e) {
                 lastError = e;
                 String msg = e.getMessage() != null ? e.getMessage() : "";
-                if (msg.contains("429") || msg.contains("503") || msg.contains("500")) {
+                if ((msg.contains("429") || msg.contains("503") || msg.contains("500")) && attempt < MAX_RETRIES) {
                     long waitMs = (long) Math.pow(2, attempt) * 2000L;
                     System.out.println("[Gemini] Rate limit / server error, retry sau " + waitMs + "ms...");
                     Thread.sleep(waitMs);

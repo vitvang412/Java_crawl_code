@@ -8,27 +8,23 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Thanh trạng thái ở chân cửa sổ: hiển thị thông điệp chung + trạng thái scheduler.
- * Tự cập nhật mỗi 5 giây.
- */
 public class StatusBar extends JPanel {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("HH:mm dd/MM");
 
-    private final JLabel leftLabel  = new JLabel("Hệ thống đã sẵn sàng.");
+    private final JLabel leftLabel  = new JLabel("He thong da san sang.");
     private final JLabel rightLabel = new JLabel();
 
     public StatusBar() {
         setLayout(new BorderLayout());
-        setBackground(new Color(0xECEFF1));
-        setBorder(new EmptyBorder(4, 10, 4, 10));
+        setBackground(UIConstants.PRIMARY_LIGHT);
+        setBorder(new EmptyBorder(4, 12, 4, 12));
         setPreferredSize(new Dimension(0, 28));
 
         leftLabel.setFont(UIConstants.SMALL);
-        leftLabel.setForeground(UIConstants.TEXT_MUTED);
+        leftLabel.setForeground(UIConstants.TEXT);
         rightLabel.setFont(UIConstants.SMALL);
-        rightLabel.setForeground(UIConstants.TEXT_MUTED);
+        rightLabel.setForeground(UIConstants.TEXT);
         rightLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 
         add(leftLabel,  BorderLayout.WEST);
@@ -44,14 +40,14 @@ public class StatusBar extends JPanel {
         CrawlScheduler s = CrawlScheduler.getInstance();
         StringBuilder sb = new StringBuilder();
         if (s.isRunning()) {
-            sb.append("⏱ Lịch: ON (").append(s.getIntervalHours()).append("h)");
+            sb.append("Lich: ON (").append(s.getIntervalHours()).append("h)");
             if (s.getNextRunAt() != null) {
-                sb.append("  |  Kế: ").append(s.getNextRunAt().format(FMT));
+                sb.append("  |  Ke: ").append(s.getNextRunAt().format(FMT));
             }
         } else {
-            sb.append("⏱ Lịch: OFF");
+            sb.append("Lich: OFF");
         }
-        if (s.isJobActive()) sb.append("  |  Đang chạy...");
+        if (s.isJobActive()) sb.append("  |  Dang chay...");
         rightLabel.setText(sb.toString());
     }
 }

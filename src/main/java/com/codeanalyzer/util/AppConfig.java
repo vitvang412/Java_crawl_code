@@ -51,9 +51,13 @@ public class AppConfig {
     public String dbUsername()      { return get("db.username"); }
     public String dbPassword()      { return get("db.password"); }
 
-    public String geminiApiKey()    { return get("gemini.api.key"); }
-    public String geminiModel()     { return get("gemini.model", "gemini-1.5-flash"); }
-    public String geminiApiUrl()    { return get("gemini.api.url"); }
+    public String geminiApiKey() {
+        String envKey = System.getenv("GEMINI_API_KEY");
+        if (envKey != null && !envKey.isBlank()) return envKey;
+        return get("gemini.api.key");
+    }
+    public String geminiModel()     { return get("gemini.model", "gemini-2.0-flash"); }
+    public String geminiApiUrl()    { return get("gemini.api.url", "https://generativelanguage.googleapis.com/v1beta/models/"); }
 
     public String chromeProfilePath(){ return get("chrome.profile.path"); }
     public String chromeProfileDir() { return get("chrome.profile.dir", "Default"); }

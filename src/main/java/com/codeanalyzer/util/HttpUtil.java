@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 
 public class HttpUtil {
 
-    private static final int CONNECT_TIMEOUT = 15_000;
-    private static final int READ_TIMEOUT    = 30_000;
+    private static final int CONNECT_TIMEOUT = 30_000;
+    private static final int READ_TIMEOUT    = 60_000;
 
     private HttpUtil() {}
 

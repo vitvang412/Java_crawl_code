@@ -17,15 +17,6 @@ import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/**
- * Panel hiển thị KẾT QUẢ ĐÁNH GIÁ TỔNG THỂ theo từng sinh viên.
- * Lấy từ bảng student_evaluations (do StudentEvaluator ghi lại).
- *
- *  - Cột: Username, Tổng bài, DSA Score, AI Dep, Top Thuật Toán, Top CTDL,
- *         Xếp hạng tổng quát, Cập nhật lúc
- *  - Nút: "Đánh giá lại tất cả" → chạy StudentEvaluator cho mọi sinh viên
- *  - Double-click 1 dòng → mở dialog chi tiết với từng analysis_result.
- */
 public class EvaluationPanel extends JPanel {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
@@ -44,10 +35,10 @@ public class EvaluationPanel extends JPanel {
         setBackground(UIConstants.BACKGROUND);
 
         String[] cols = {
-                "Username", "Bài đã phân tích",
+                "Username", "Bai da phan tich",
                 "DSA Score (0-10)", "AI Dep (0-10)",
-                "Top Thuật Toán", "Top CTDL",
-                "Xếp hạng", "Cập nhật"
+                "Top Thuat Toan", "Top CTDL",
+                "Xep hang", "Cap nhat"
         };
         tableModel = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -56,11 +47,12 @@ public class EvaluationPanel extends JPanel {
         table.setRowHeight(28);
         table.setFont(UIConstants.MAIN);
         table.getTableHeader().setFont(UIConstants.SUBHEADER);
-        table.getTableHeader().setBackground(UIConstants.PRIMARY_LIGHT);
+        table.getTableHeader().setBackground(UIConstants.PRIMARY);
         table.getTableHeader().setForeground(Color.WHITE);
         table.setGridColor(UIConstants.BORDER);
+        table.setSelectionBackground(UIConstants.PRIMARY_LIGHT);
+        table.setSelectionForeground(UIConstants.TEXT);
 
-        // Canh giữa các cột số
         DefaultTableCellRenderer center = new DefaultTableCellRenderer();
         center.setHorizontalAlignment(SwingConstants.CENTER);
         TableColumnModel tcm = table.getColumnModel();
@@ -81,19 +73,17 @@ public class EvaluationPanel extends JPanel {
         refreshData();
     }
 
-    // ── UI ────────────────────────────────────────────────────────────────
-
     private JPanel buildHeader() {
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
 
-        JLabel title = new JLabel("📊  Đánh giá tổng thể sinh viên");
+        JLabel title = new JLabel("Danh gia tong the sinh vien");
         title.setFont(UIConstants.HEADER);
         title.setForeground(UIConstants.PRIMARY_DARK);
 
-        StyledButton btnRefresh = new StyledButton("🔄 Làm mới",         StyledButton.Variant.NEUTRAL);
-        StyledButton btnRecalc  = new StyledButton("🧮 Đánh giá lại tất cả", StyledButton.Variant.PRIMARY);
-        StyledButton btnDetail  = new StyledButton("🔍 Xem chi tiết",     StyledButton.Variant.ACCENT);
+        StyledButton btnRefresh = new StyledButton("Lam moi",              StyledButton.Variant.NEUTRAL);
+        StyledButton btnRecalc  = new StyledButton("Danh gia lai tat ca",  StyledButton.Variant.PRIMARY);
+        StyledButton btnDetail  = new StyledButton("Xem chi tiet",         StyledButton.Variant.ACCENT);
 
         btnRefresh.addActionListener(e -> refreshData());
         btnRecalc.addActionListener(e -> recalcAll(btnRecalc));
@@ -117,8 +107,6 @@ public class EvaluationPanel extends JPanel {
         c.add(comp, BorderLayout.CENTER);
         return c;
     }
-
-    // ── Data ──────────────────────────────────────────────────────────────
 
     private void refreshData() {
         tableModel.setRowCount(0);
@@ -145,12 +133,12 @@ public class EvaluationPanel extends JPanel {
                 SwingUtilities.invokeLater(() -> {
                     refreshData();
                     JOptionPane.showMessageDialog(this,
-                            "Đã đánh giá lại " + out.size() + " sinh viên.",
-                            "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
+                            "Da danh gia lai " + out.size() + " sinh vien.",
+                            "Hoan tat", JOptionPane.INFORMATION_MESSAGE);
                 });
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
-                        "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE));
+                        "Loi: " + ex.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE));
             } finally {
                 SwingUtilities.invokeLater(() -> src.setEnabled(true));
             }
@@ -160,7 +148,7 @@ public class EvaluationPanel extends JPanel {
     private void showDetailForSelected() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Chọn 1 dòng trước!");
+            JOptionPane.showMessageDialog(this, "Chon 1 dong truoc!");
             return;
         }
         String username = (String) tableModel.getValueAt(row, 0);
@@ -172,19 +160,19 @@ public class EvaluationPanel extends JPanel {
 
         List<AnalysisResult> details = analysisDAO.findByStudentId(ev.getStudentId());
         StringBuilder sb = new StringBuilder();
-        sb.append("<html><body style='font-family:Segoe UI;font-size:12px;'>");
-        sb.append("<h2 style='color:#303F9F;margin:0'>").append(username).append("</h2>");
-        sb.append("<p><b>Xếp hạng:</b> ").append(ev.overallLabel())
+        sb.append("<html><body style='font-family:SansSerif;font-size:12px;'>");
+        sb.append("<h2 style='color:#C96B30;margin:0'>").append(username).append("</h2>");
+        sb.append("<p><b>Xep hang:</b> ").append(ev.overallLabel())
           .append(" &nbsp; <b>DSA:</b> ").append(String.format("%.2f", ev.getDsaScore()))
           .append(" &nbsp; <b>AI dep:</b> ").append(String.format("%.2f", ev.getAiDependencyScore()))
-          .append(" &nbsp; <b>Bài:</b> ").append(ev.getTotalAnalyzed())
+          .append(" &nbsp; <b>Bai:</b> ").append(ev.getTotalAnalyzed())
           .append("</p>");
-        sb.append("<p><b>Top thuật toán:</b> ").append(esc(ev.getTopAlgorithms())).append("</p>");
+        sb.append("<p><b>Top thuat toan:</b> ").append(esc(ev.getTopAlgorithms())).append("</p>");
         sb.append("<p><b>Top CTDL:</b> ").append(esc(ev.getTopDataStructures())).append("</p>");
-        sb.append("<hr><h3>Chi tiết từng bài (" + details.size() + ")</h3>");
+        sb.append("<hr><h3>Chi tiet tung bai (" + details.size() + ")</h3>");
         sb.append("<table border='1' cellpadding='4' cellspacing='0' style='border-collapse:collapse;'>");
-        sb.append("<tr style='background:#E8EAF6'><th>Bài</th><th>AI</th><th>Độ phức tạp</th>"
-                + "<th>Thuật toán</th><th>CTDL</th></tr>");
+        sb.append("<tr style='background:#F5C4A1'><th>Bai</th><th>AI</th><th>Do phuc tap</th>"
+                + "<th>Thuat toan</th><th>CTDL</th></tr>");
         for (AnalysisResult r : details) {
             sb.append("<tr><td>").append(esc(r.getProblemName())).append("</td>")
               .append("<td align='center'>").append(r.getAiUsageScore()).append("/10</td>")
@@ -200,7 +188,7 @@ public class EvaluationPanel extends JPanel {
         pane.setCaretPosition(0);
         JScrollPane sp = new JScrollPane(pane);
         sp.setPreferredSize(new Dimension(900, 500));
-        JOptionPane.showMessageDialog(this, sp, "Chi tiết: " + username,
+        JOptionPane.showMessageDialog(this, sp, "Chi tiet: " + username,
                 JOptionPane.PLAIN_MESSAGE);
     }
 
@@ -209,9 +197,6 @@ public class EvaluationPanel extends JPanel {
         return s.replace("<", "&lt;").replace(">", "&gt;");
     }
 
-    // ── Renderers ─────────────────────────────────────────────────────────
-
-    /** Tô màu ô DSA (cao = xanh) hoặc AI Dep (cao = đỏ). */
     private static class ScoreRenderer extends DefaultTableCellRenderer {
         private final boolean higherIsBetter;
         ScoreRenderer(boolean higherIsBetter) {
@@ -227,13 +212,13 @@ public class EvaluationPanel extends JPanel {
             try { val = Double.parseDouble(String.valueOf(v)); } catch (Exception ignored) {}
             Color bg;
             if (higherIsBetter) {
-                bg = val >= 6 ? new Color(0xC8E6C9)
-                   : val >= 3 ? new Color(0xFFF9C4)
-                              : new Color(0xFFCDD2);
-            } else { // higher is worse (AI dep)
-                bg = val <= 3 ? new Color(0xC8E6C9)
-                   : val <= 6 ? new Color(0xFFF9C4)
-                              : new Color(0xFFCDD2);
+                bg = val >= 6 ? new Color(0xD5E8D0)
+                   : val >= 3 ? new Color(0xFFF3D0)
+                              : new Color(0xF8D7D0);
+            } else {
+                bg = val <= 3 ? new Color(0xD5E8D0)
+                   : val <= 6 ? new Color(0xFFF3D0)
+                              : new Color(0xF8D7D0);
             }
             comp.setBackground(bg);
             return comp;
@@ -249,10 +234,10 @@ public class EvaluationPanel extends JPanel {
             if (sel) return comp;
             String s = String.valueOf(v);
             Color bg = switch (s) {
-                case "Tốt"           -> new Color(0xC8E6C9);
-                case "Trung bình"    -> new Color(0xFFF9C4);
-                case "Yếu / Nghi ngờ"-> new Color(0xFFCDD2);
-                default              -> Color.WHITE;
+                case "T\u1ed1t"                  -> new Color(0xD5E8D0);
+                case "Trung b\u00ecnh"           -> new Color(0xFFF3D0);
+                case "Y\u1ebfu / Nghi ng\u1edd"  -> new Color(0xF8D7D0);
+                default                          -> Color.WHITE;
             };
             comp.setBackground(bg);
             return comp;

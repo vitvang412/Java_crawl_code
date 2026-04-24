@@ -2,44 +2,40 @@ package com.codeanalyzer.ui;
 
 import java.awt.*;
 
-/**
- * Bảng màu / font dùng chung cho toàn bộ UI.
- * Thiết kế theo hướng "Indigo + Emerald" – hiện đại, dễ nhìn, tương phản tốt.
- */
 public final class UIConstants {
     private UIConstants() {}
 
-    // ── Màu chính ──────────────────────────────────────────────────────────
-    public static final Color PRIMARY       = new Color(0x3F51B5);  // Indigo
-    public static final Color PRIMARY_DARK  = new Color(0x303F9F);
-    public static final Color PRIMARY_LIGHT = new Color(0x7986CB);
-    public static final Color ACCENT        = new Color(0x00BFA5);  // Emerald
-    public static final Color ACCENT_DARK   = new Color(0x009688);
+    // -- Cam nhat chu dao --
+    public static final Color PRIMARY       = new Color(0xE8874A);
+    public static final Color PRIMARY_DARK  = new Color(0xC96B30);
+    public static final Color PRIMARY_LIGHT = new Color(0xF5C4A1);
+    public static final Color ACCENT        = new Color(0x4A90A4);
+    public static final Color ACCENT_DARK   = new Color(0x377080);
 
-    // ── Màu trạng thái ─────────────────────────────────────────────────────
-    public static final Color SUCCESS       = new Color(0x2E7D32);
-    public static final Color WARNING       = new Color(0xF57C00);
-    public static final Color DANGER        = new Color(0xC62828);
+    // -- Trang thai --
+    public static final Color SUCCESS       = new Color(0x4A8C5C);
+    public static final Color WARNING       = new Color(0xD4922A);
+    public static final Color DANGER        = new Color(0xC44444);
 
-    // ── Màu nền / text ─────────────────────────────────────────────────────
-    public static final Color BACKGROUND    = new Color(0xF5F7FA);
+    // -- Nen / text --
+    public static final Color BACKGROUND    = new Color(0xFDF6F0);
     public static final Color CARD_BG       = Color.WHITE;
-    public static final Color TEXT          = new Color(0x212121);
-    public static final Color TEXT_MUTED    = new Color(0x757575);
-    public static final Color BORDER        = new Color(0xE0E0E0);
+    public static final Color TEXT          = new Color(0x3D2C1E);
+    public static final Color TEXT_MUTED    = new Color(0x8B7B6E);
+    public static final Color BORDER        = new Color(0xE8DDD4);
 
-    // ── Màu log / console ──────────────────────────────────────────────────
-    public static final Color CONSOLE_BG    = new Color(0x1E1E2E);
-    public static final Color CONSOLE_FG    = new Color(0xC8E6C9);
+    // -- Log area --
+    public static final Color CONSOLE_BG    = new Color(0x2C1E14);
+    public static final Color CONSOLE_FG    = new Color(0xF0D9C6);
 
-    // ── Fonts ──────────────────────────────────────────────────────────────
-    public static final Font HEADER     = new Font("Segoe UI", Font.BOLD,  20);
-    public static final Font SUBHEADER  = new Font("Segoe UI", Font.BOLD,  14);
-    public static final Font MAIN       = new Font("Segoe UI", Font.PLAIN, 13);
-    public static final Font SMALL      = new Font("Segoe UI", Font.PLAIN, 12);
+    // -- Fonts --
+    public static final Font HEADER     = new Font("SansSerif", Font.BOLD,  18);
+    public static final Font SUBHEADER  = new Font("SansSerif", Font.BOLD,  13);
+    public static final Font MAIN       = new Font("SansSerif", Font.PLAIN, 13);
+    public static final Font SMALL      = new Font("SansSerif", Font.PLAIN, 11);
     public static final Font MONO       = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
-    // ── Legacy aliases (giữ để không vỡ code cũ) ──────────────────────────
+    // -- Legacy aliases --
     public static final Color PRIMARY_COLOR    = PRIMARY;
     public static final Color ACCENT_COLOR     = ACCENT;
     public static final Color BACKGROUND_COLOR = BACKGROUND;
@@ -47,7 +43,7 @@ public final class UIConstants {
     public static final Font  MAIN_FONT        = MAIN;
     public static final Font  HEADER_FONT      = HEADER;
 
-    // ── Kích thước ─────────────────────────────────────────────────────────
+    // -- Kich thuoc --
     public static final int PADDING      = 12;
     public static final int BIG_PADDING  = 20;
 }
